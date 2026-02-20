@@ -6,17 +6,19 @@ import {
 } from "@nestjs/common";
 import { CreateArticleDto } from "./dto/create-article.dto";
 import { UpdateArticleDto } from "./dto/update-article.dto";
-import { Article } from "./entities/article.entity";
 import { Repository } from "typeorm";
+import { Article } from "./entities/article.entity";
 
 @Injectable()
 export class ArticleService {
   constructor(
     @InjectRepository(Article) private articleRepo: Repository<Article>,
   ) {}
-  async create(createArticleDto: CreateArticleDto) {
+  async create(createArticleDto: CreateArticleDto, file: Express.Multer.File): Promise<Article>{
     try {
       const article = this.articleRepo.create(createArticleDto);
+
+      article.backgroundImage = `http://localhost:4001/uploads/${file.filename}`
       return await this.articleRepo.save(article);
     } catch (error) {
       throw new InternalServerErrorException(error.message);

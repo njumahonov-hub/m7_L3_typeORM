@@ -95,7 +95,7 @@ export class AuthService {
 
       await this.authRepository.update(foundeduser.id, {otp: " ", otptime: 0})
 
-      const payload = { email: foundeduser.email, role: foundeduser.role };
+      const payload = { email: foundeduser.email, roles: foundeduser.role };
       const access_token = await this.jwtService.signAsync(payload);
 
       return {
@@ -152,6 +152,12 @@ export class AuthService {
   //   }
 
     async remove(id: number): Promise<boolean> {
+      const foundeduser = await this.authRepository.findOne({
+        where: { id },
+      });
+
+      if (!foundeduser) throw new BadRequestException("user not found");
+
       await this.authRepository.delete(+id)
       return true
     }
