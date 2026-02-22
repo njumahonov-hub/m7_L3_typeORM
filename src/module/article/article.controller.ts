@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, UseGuards, Req, Query } from '@nestjs/common';
 import { ArticleService } from './article.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
@@ -11,6 +11,7 @@ import { AuthGuard } from 'src/common/guard/auth.guard';
 import { RolesGuard } from 'src/common/guard/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorators';
 import { UserRole } from 'src/shared/constant/user.role';
+import { QueryDto } from './dto/query.dto';
 
 @ApiBearerAuth("JWT-auth")
 @UseGuards(AuthGuard)
@@ -21,7 +22,7 @@ export class ArticleController {
   constructor(private readonly articleService: ArticleService) {}
 
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
+  @Roles(UserRole.ADMIN, UserRole.USER, UserRole.SUPERADMIN)
   @ApiOperation({description: "Create article api (public)"})
   @ApiConsumes("multipart/form-data")
   @ApiBody({type: CreateSwaggerArticleDTo})
@@ -39,15 +40,28 @@ export class ArticleController {
     })
   )
   @Post()
-  create(@Body() createArticleDto: CreateArticleDto, @UploadedFile() file:Express.Multer.File) {
-    return this.articleService.create(createArticleDto, file);
+  create(@Body() createArticleDto: CreateArticleDto,
+   @UploadedFile() file:Express.Multer.File,
+   @Req() req
+  ) {
+    return this.articleService.create(createArticleDto, file, req.user.id);
   }
 
   @ApiOperation({description: "get all articles api (public)"})
   @ApiOkResponse({description: "list of articles"})
   @Get()
-  findAll() {
-    return this.articleService.findAll();
+  findAll(@Query() query: QueryDto) {
+    return this.articleService.findAll(query);
+  }
+
+  
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.USER, UserRole.SUPERADMIN)
+  @ApiOperation({description: "get my all articles api (owner)"})
+  @ApiOkResponse({description: "list of articles"})
+  @Get("getMyArticles")
+  findMyAllArticles(@Req() req) {
+    return this.articleService.findMYAllArticles(req.user.id);
   }
 
   @ApiOperation({description: "get one article api (public)"})
@@ -58,25 +72,25 @@ export class ArticleController {
     return this.articleService.findOne(+id);
   }
 
-  @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
-  @ApiOperation({description: "update article api (owner)"})
-  @ApiConsumes("multipart/form-data")
-  @ApiBody({type: CreateSwaggerArticleDTo})
-  @ApiNotFoundResponse({description: "Article not found"})
-  @ApiOkResponse({description: "updated"})
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateArticleDto: UpdateArticleDto) {
-    return this.articleService.update(+id, updateArticleDto);
-  }
+  // @UseGuards(RolesGuard)
+  // @Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
+  // @ApiOperation({description: "update article api (owner)"})
+  // @ApiConsumes("multipart/form-data")
+  // @ApiBody({type: CreateSwaggerArticleDTo})
+  // @ApiNotFoundResponse({description: "Article not found"})
+  // @ApiOkResponse({description: "updated"})
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateArticleDto: UpdateArticleDto) {
+  //   return this.articleService.update(+id, updateArticleDto);
+  // }
 
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
+  @Roles(UserRole.ADMIN, UserRole.USER, UserRole.SUPERADMIN)
   @ApiOperation({description: "delete article api (owner)"})
   @ApiNotFoundResponse({description: "Article not found"})
   @ApiOkResponse({description: "deleted"})
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.articleService.remove(+id);
+  remove(@Param('id') id: string, @Req() req) {
+    return this.articleService.remove(+id, req.user.id);
   }
 }

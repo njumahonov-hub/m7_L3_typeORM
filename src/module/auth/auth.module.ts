@@ -12,7 +12,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     JwtModule.register({
       global: true,
       secret: String(process.env.SECRET),
-      signOptions: {expiresIn: "15m"}
+      signOptions: {expiresIn: "60d"}
     })
   ],
   controllers: [AuthController],
