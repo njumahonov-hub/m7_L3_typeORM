@@ -16,8 +16,8 @@ export class QueryDto {
     limit?: number = 10
 
     
-    @IsNumber()
+    @IsString()
     @IsOptional()
-    @ApiProperty()
-    search?: number
+    @ApiProperty({default: "HTML"})
+    search?: string
 }
