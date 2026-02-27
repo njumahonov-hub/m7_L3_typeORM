@@ -22,7 +22,7 @@ import { ArticleImagesModule } from './module/article-images/article-images.modu
       database: String(process.env.DB_NAME),
       entities: [Auth, Article, Tag, ArticleImage],
       synchronize: true,
-      logging: false
+      logging: true
     }),
     AuthModule,
     ArticleModule,

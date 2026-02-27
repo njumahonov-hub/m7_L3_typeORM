@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, UseGuards, Req, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, UseGuards, Req, Query, ParseIntPipe } from '@nestjs/common';
 import { ArticleService } from './article.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
@@ -12,6 +12,7 @@ import { RolesGuard } from 'src/common/guard/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorators';
 import { UserRole } from 'src/shared/constant/user.role';
 import { QueryDto } from './dto/query.dto';
+import { OwnerGuard } from './guard/owner.guard';
 
 @ApiBearerAuth("JWT-auth")
 @UseGuards(AuthGuard)
@@ -84,13 +85,13 @@ export class ArticleController {
   //   return this.articleService.update(+id, updateArticleDto);
   // }
 
-  @UseGuards(RolesGuard)
+  @UseGuards(RolesGuard, OwnerGuard)
   @Roles(UserRole.ADMIN, UserRole.USER, UserRole.SUPERADMIN)
   @ApiOperation({description: "delete article api (owner)"})
   @ApiNotFoundResponse({description: "Article not found"})
   @ApiOkResponse({description: "deleted"})
   @Delete(':id')
-  remove(@Param('id') id: string, @Req() req) {
+  remove(@Param('id', ParseIntPipe) id: string, @Req() req) {
     return this.articleService.remove(+id, req.user.id);
   }
 }
