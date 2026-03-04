@@ -14,6 +14,7 @@ import * as nodemailer from "nodemailer";
 import { JwtService } from "@nestjs/jwt";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
+import { UserService } from "./user/user.service";
 
 @Injectable()
 export class AuthService {
@@ -21,6 +22,7 @@ export class AuthService {
   constructor(
     @InjectRepository(Auth) private authRepository: Repository<Auth>,
     private jwtService: JwtService,
+    private userService: UserService
   ) {
     this.transporter = nodemailer.createTransport({
       service: "gmail",
@@ -137,6 +139,17 @@ export class AuthService {
         return {message: "wrong password"}
       }
 
+    }
+
+    async googleLogin(userData: any) {
+        const user = await this.userService.findOrCreate(userData)
+
+          const payload = {id: user.id, email: user.email, roles: user.role };
+      const access_token = await this.jwtService.signAsync(payload);
+
+      return {
+        access_token,
+      };
     }
 
   //   async findAll(): Promise<Auth[]> {

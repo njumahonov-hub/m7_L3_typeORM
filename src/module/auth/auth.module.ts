@@ -4,6 +4,9 @@ import { AuthController } from './auth.controller';
 import { Auth } from './entities/auth.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserModule } from './user/user.module';
+import { JwtStrategy } from './jwt-strategy';
+import { GoogleStrategy } from './google-strategy';
 
 @Global()
 @Module({
@@ -13,9 +16,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       global: true,
       secret: String(process.env.SECRET),
       signOptions: {expiresIn: "60d"}
-    })
+    }),
+    UserModule
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, JwtStrategy, GoogleStrategy],
 })
 export class AuthModule {}

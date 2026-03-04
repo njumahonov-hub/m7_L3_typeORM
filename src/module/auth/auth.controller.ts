@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto, LoginAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { VerifyAuthDto } from './dto/verify-auth.dto';
 import { ApiCreatedResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags("Auth")
 @ApiInternalServerErrorResponse({description: "internal server error"})
@@ -11,6 +12,16 @@ import { ApiCreatedResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Get("google")
+  @UseGuards(AuthGuard("google"))
+  authGoogle() {}
+
+  
+  @Get("google/callback")
+  @UseGuards(AuthGuard("google"))
+  googleRedirect(@Request() req: any) {
+    return this.authService.googleLogin(req.user)
+  }
   
     @ApiOperation({description: "register user api (public)"})
     @ApiCreatedResponse({description: "registered"})
